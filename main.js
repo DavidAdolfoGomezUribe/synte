@@ -8,7 +8,7 @@ const speaker = new Speaker({
 });
 
 const sampleRate = 44100;
-const bufferDuration = 0.2;
+const bufferDuration = 0.1;
 const samplesPerBuffer = Math.floor(sampleRate * bufferDuration);
 
 const keyToFreq = {
@@ -17,10 +17,34 @@ const keyToFreq = {
 };
 
 const cumpleaños = [
-  261.63, 261.63, 293.66, 261.63, 349.23, 329.63,
-  261.63, 261.63, 293.66, 261.63, 392.00, 349.23,
-  261.63, 261.63, 523.25, 440.00, 349.23, 329.63, 293.66,
-  466.16, 466.16, 440.00, 349.23, 392.00, 349.23
+  { freq: 261.63, duracion: 400 },
+  { freq: 261.63, duracion: 400 },
+  { freq: 293.66, duracion: 600 },
+  { freq: 261.63, duracion: 400 },
+  { freq: 349.23, duracion: 400 },
+  { freq: 329.63, duracion: 800 },
+
+  { freq: 261.63, duracion: 400 },
+  { freq: 261.63, duracion: 400 },
+  { freq: 293.66, duracion: 600 },
+  { freq: 261.63, duracion: 400 },
+  { freq: 392.00, duracion: 400 },
+  { freq: 349.23, duracion: 800 },
+
+  { freq: 261.63, duracion: 400 },
+  { freq: 261.63, duracion: 400 },
+  { freq: 523.25, duracion: 600 },
+  { freq: 440.00, duracion: 400 },
+  { freq: 349.23, duracion: 400 },
+  { freq: 329.63, duracion: 400 },
+  { freq: 293.66, duracion: 800 },
+
+  { freq: 466.16, duracion: 400 },
+  { freq: 466.16, duracion: 400 },
+  { freq: 440.00, duracion: 600 },
+  { freq: 349.23, duracion: 400 },
+  { freq: 392.00, duracion: 400 },
+  { freq: 349.23, duracion: 800 }
 ];
 
 let activeNotes = {};
@@ -62,7 +86,7 @@ setInterval(() => {
 }, bufferDuration * 1000);
 
 // 🎶 Reproducción automática
-function reproducirCancion(notas, duracion = 400) {
+function reproducirCancion(notas) {
   modo = "auto";
   let i = 0;
 
@@ -74,13 +98,15 @@ function reproducirCancion(notas, duracion = 400) {
       mostrarMenu();
       return;
     }
-    const freq = notas[i++];
-    activeNotes["auto"] = freq;
+
+    const nota = notas[i++];
+    activeNotes["auto"] = nota.freq;
+
     setTimeout(() => {
       delete activeNotes["auto"];
       delete phaseMap["auto"];
       setTimeout(siguiente, 50);
-    }, duracion);
+    }, nota.duracion);
   }
 
   console.clear();
@@ -96,6 +122,63 @@ function iniciarSintetizador() {
   console.log("Presiona teclas A–K. Ctrl+C para salir.\n");
 }
 
+const acordes = [
+  [
+    { key: "acorde1_1", freq: 261.63 },
+    { key: "acorde1_2", freq: 329.63 },
+    { key: "acorde1_3", freq: 392.00 }
+  ],
+  [
+    { key: "acorde2_1", freq: 349.23 },
+    { key: "acorde2_2", freq: 440.00 },
+    { key: "acorde2_3", freq: 523.25 }
+  ],
+  [
+    { key: "acorde3_1", freq: 392.00 },
+    { key: "acorde3_2", freq: 493.88 },
+    { key: "acorde3_3", freq: 587.33 }
+  ],
+  [
+    { key: "acorde4_1", freq: 440.00 },
+    { key: "acorde4_2", freq: 523.25 },
+    { key: "acorde4_3", freq: 659.25 }
+  ]
+];
+function reproducirAcordes(acordes, duracion = 1000) {
+  modo = "auto";
+  let i = 0;
+
+  function siguiente() {
+    if (i >= acordes.length) {
+      modo = "menu";
+      activeNotes = {};
+      console.log("\n🎶 Fin de los acordes.");
+      mostrarMenu();
+      return;
+    }
+
+    const acorde = acordes[i++];
+    for (const nota of acorde) {
+      activeNotes[nota.key] = nota.freq;
+    }
+
+    setTimeout(() => {
+      for (const nota of acorde) {
+        delete activeNotes[nota.key];
+        delete phaseMap[nota.key];
+      }
+      setTimeout(siguiente, 200); // pequeño espacio entre acordes
+    }, duracion);
+  }
+
+  console.clear();
+  console.log("🎵 Reproduciendo acordes...\n");
+  siguiente();
+}
+
+
+
+// 🧭 Menú
 function mostrarMenu() {
   modo = "menu";
   activeNotes = {};
@@ -104,16 +187,19 @@ function mostrarMenu() {
   console.log("🎛️  Menú principal");
   console.log("[1] Usar sintetizador");
   console.log("[2] Reproducir 'Cumpleaños feliz'");
-  console.log("\nPresiona 1 o 2 para seleccionar.\n");
+  console.log("[3] Reproducir acordes");
+  console.log("\nPresiona 1, 2 o 3 para seleccionar.\n");
 }
 
-// 🎯 Evento de teclado
+
+// 🎯 Eventos de teclado
 xevEmitter.on("KeyPress", (key) => {
   const k = key.toLowerCase();
 
   if (modo === "menu") {
     if (k === "1") iniciarSintetizador();
     else if (k === "2") reproducirCancion(cumpleaños);
+    else if (k === "3") reproducirAcordes(acordes)
     else console.log("❌ Opción no válida:", k);
     return;
   }
