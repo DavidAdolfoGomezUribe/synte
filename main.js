@@ -15,6 +15,11 @@ const samplesPerBuffer = Math.floor(sampleRate * bufferDuration); //esto calcula
 
 //este es el objeto que permite mapear las notas del teclado, peronalicelo a su antojo
 const keyToFreq = {
+  a: 138.59,        // C♯3 (Do♯3)
+  s: 155.56,        // D♯3 (Re♯3)
+  f: 185.00,        // F♯3 (Fa♯3)
+  g: 207.65,        // G♯3 (Sol♯3)
+  h: 233.08,        // A♯3 (La♯3)
   less: 130.81,     // C3
   z: 146.83,        // D3
   x: 164.81,        // E3
@@ -26,8 +31,9 @@ const keyToFreq = {
   comma: 293.66,    // D4
   period: 329.63,   // E4
   minus: 349.23     // F4
-
 };
+
+
 
 //este es un array de objetos que permite tener una plantilla de como usar
 
@@ -119,9 +125,9 @@ let phaseMap = {}; //Guarda la fase continua de cada nota activa
 let modo = "menu"; //para controlar el estado del programa ("menu", "synth", "auto").
 
 
-// funciones a usar 
+// Funciones a usar 
 
-//esta funcion permite la generacion de polyfonias 
+// Esta funcion permite la generacion de polyfonias 
 function generatePolyBuffer() {
   const buf = Buffer.alloc(samplesPerBuffer * 2);
   for (let i = 0; i < samplesPerBuffer; i++) {
@@ -130,7 +136,19 @@ function generatePolyBuffer() {
       const freq = activeNotes[key];
       const phase = phaseMap[key] || 0;
       const inc = (2 * Math.PI * freq) / sampleRate;
-      sampleValue += Math.sin(phase + i * inc);
+      // Tipo de onda a escoger
+      //sawtooth
+      const t = (phase + i * inc) / (2 * Math.PI);
+      sampleValue += 2 * (t - Math.floor(t + 0.5)); //dejare esta por que es mi favorita
+      
+      // square
+      //sampleValue += Math.sign(Math.sin(phase + i * inc));
+      
+      // triangle
+      //sampleValue += 2 * Math.asin(Math.sin(phase + i * inc)) / Math.PI;
+      
+      // sine
+      //sampleValue += Math.sin(phase + i * inc);
       count++;
     }
 
@@ -149,6 +167,7 @@ function generatePolyBuffer() {
 
   return buf;
 }
+// Esta función reproduce acordes definidos en el array "acordes".
 
 function reproducirAcordes(acordes) {
   modo = "auto";
@@ -185,7 +204,7 @@ function reproducirAcordes(acordes) {
 }
 
 
-
+// Esta función reproduce la canción "Cumpleaños feliz" usando las notas definidas
 
 function reproducirCancion(notas) {
   modo = "auto";
@@ -206,7 +225,7 @@ function reproducirCancion(notas) {
     setTimeout(() => {
       delete activeNotes["auto"];
       delete phaseMap["auto"];
-      setTimeout(siguiente, 50);
+      setTimeout(siguiente, 10);
     }, nota.duracion);
   }
 
@@ -215,14 +234,17 @@ function reproducirCancion(notas) {
   siguiente();
 }
 
+// Reproducción continua del sintetizador
+// Esta parte del código se encarga de generar y enviar el buffer de audio al altavoz
+// cada 0.25 segundos, siempre que el modo sea "synth" o "auto".
 setInterval(() => {
   if (modo === "synth" || modo === "auto") {
     speaker.write(generatePolyBuffer());
   }
 }, bufferDuration * 1000);
 
+// funciones de menus 
 
-// 🎹 Sintetizador interactivo
 function iniciarSintetizador() {
   modo = "synth";
   console.clear();
@@ -244,7 +266,7 @@ function mostrarMenu() {
 }
 
 
-// 🎯 Eventos de teclado
+// Eventos de teclado 
 xevEmitter.on("KeyPress", (key) => {
   const k = key.toLowerCase();
 
@@ -271,5 +293,5 @@ xevEmitter.on("KeyRelease", (key) => {
   }
 });
 
-// ▶️ Inicio
+//  Inicio
 mostrarMenu();
