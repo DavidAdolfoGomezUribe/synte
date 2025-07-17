@@ -1,5 +1,8 @@
 # Syntetizador por consola para reproduccion de melodias monofonicas y acordes polyfonicos.
 
+## video explicativo
+[Video explicativo](https://www.tiktok.com/@davidgomez071/video/7527883515514391814)
+
 ## Descripción del problema.
 - Los usuarios desean poder reproducir audio sintetizado por consola usando node.js a fin de poder tener versatilidad a la hora de programar ya que esto habilitaria la opcion de poder tener notificaciones que puedan ser reconocidas por un tono o melodia corta, asu vez , permite polyfonias de acortdes y construccion de melodias monofonicas construyendo objetos o arrays.
 
